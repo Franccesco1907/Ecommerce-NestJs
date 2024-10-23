@@ -1,0 +1,32 @@
+### Create shopping cart
+post http://localhost:3000/v1/shopping-cart
+Content-Type: application/json
+
+{
+  "cartId": "28792934-d6f0-4064-be91-6a59ca455b62",
+  "items": [
+    {
+      "productId": "a385e3bf-3bbe-4d5d-8d24-3a81c92ae8bd",
+      "quantity": 2,
+      "price": 100
+    },
+    {
+      "productId": "1b69551e-31d0-4722-b66c-f7b7f99b5b34",
+      "quantity": 1,
+      "price": 200
+    }
+  ]
+}
+
+
+### Get one shopping cart
+get http://localhost:3000/v1/shopping-cart/2a6eb15d-e36e-4203-afc8-6566b9bef03e
+
+### Get by page shopping carts
+get http://localhost:3000/v1/shopping-cart/page/0/size/10
+
+### Get all shopping carts
+get http://localhost:3000/v1/shopping-cart
+
+### Delete one shopping cart
+delete http://localhost:3000/v1/shopping-cart/2a6eb15d-e36e-4203-afc8-6566b9bef03e
