@@ -1,34 +1,19 @@
-ARG NODE_VERSION=20-alpine
-
-# imagen base
-FROM node:${NODE_VERSION} as base
+FROM node:20-alpine AS base
 WORKDIR /usr/src/app
+RUN npm install --global pnpm@9.15.9
 
-# las dependencias del proyecto
-FROM base as deps
-RUN --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=package-lock.json,target=package-lock.json \
-    --mount=type=cache,target=/root/.npm \
-    npm ci --omit=dev --force
-
-# transpilación de código
-FROM base as build
-RUN --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=package-lock.json,target=package-lock.json \
-    --mount=type=cache,target=/root/.npm \
-    npm ci --force
-
+FROM base AS build
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 COPY . .
-RUN npm run build
+RUN pnpm run build && pnpm prune --prod
 
-# imagen final
-FROM base as final
-RUN apk add curl
-ENV NODE_ENV production
+FROM node:20-alpine AS final
+WORKDIR /usr/src/app
+ENV NODE_ENV=production
 USER node
-COPY package.json .
-COPY --from=deps /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app/package.json ./
+COPY --from=build /usr/src/app/node_modules ./node_modules
 COPY --from=build /usr/src/app/dist ./dist
-COPY --from=build /usr/src/app/.env ./.env
 
-CMD npm run start:prod
+CMD ["node", "dist/main"]
